@@ -29,11 +29,11 @@ class GUI:
 
         # Adding Frame
         self.btmfrm = tk.Frame(parent, height=64)
-        # self.info_label = tk.Label(self.btmfrm,
-        #                         text="   White to Start the Game  ",
-        #                         fg=self.color2)
-        # self.info_label.pack(side=tk.RIGHT, padx=8, pady=5)
-        # self.btmfrm.pack(fill="x", side=tk.BOTTOM)
+        self.info_label = tk.Label(self.btmfrm,
+                                text="   Start the Game  ",
+                                fg=self.color2)
+        self.info_label.pack(side=tk.LEFT, padx=0, pady=10)
+        self.btmfrm.pack(fill="x", side=tk.BOTTOM)
 
         canvas_width = self.columns * self.dim_square
         canvas_height = self.rows * self.dim_square
@@ -55,7 +55,7 @@ class GUI:
         self.chessboard.show(chessboard.START_PATTERN)
         self.draw_board()
         self.draw_pieces()
-        self.info_label.config(text="   White to Start the Game  ", fg='red')
+        self.info_label.config(text="   Start the Game  ", fg='red')
 
     def square_clicked(self, event):
         col_size = row_size = self.dim_square
@@ -87,10 +87,10 @@ class GUI:
                 self.chessboard.shift(p1, p2)
             except chessboard.ChessError as error:
                 self.info_label["text"] = error.__class__.__name__
-            else:
-                turn = ('white' if piece.color == 'black' else 'black')
-                self.info_label[
-                    "text"] = '' + piece.color.capitalize() + "  :  " + p1 + p2 + '    ' + turn.capitalize() + '\'s turn'
+            # else:
+                # turn = ('white' if piece.color == 'black' else 'black')
+                # self.info_label[
+                #     "text"] = '' + piece.color.capitalize() + "  :  " + p1 + p2 + '    ' + turn.capitalize() + '\'s turn'
 
     def focus(self, pos):
         try:
@@ -157,5 +157,5 @@ def main(chessboard):
 
 
 if __name__ == "__main__":
-    game = chessboard.Board()
+    game = chessboard.Board("4q/1q/3q/6q/2q/7q/5q/0q")
     main(game)
