@@ -22,8 +22,8 @@ class Board(dict):
     fullmove_number = 1
     history = []
 
-    def __init__(self, pat=None):
-        self.show(START_PATTERN)
+    def __init__(self, pattern, pat=None):
+        self.show(pattern)
 
     def is_in_check_after_move(self, p1, p2):
         tmp = deepcopy(self)
@@ -124,7 +124,6 @@ class Board(dict):
             return False
         else:
             return True
-    # START_PATTERN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 1'
 
     def show(self, pat):
         self.clear()
