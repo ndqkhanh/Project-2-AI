@@ -9,12 +9,7 @@ Tkinter GUI Application Development Hotshot
 import sys
 
 SHORT_NAME = {
-    'R': 'Rook',
-    'N': 'Knight',
-    'B': 'Bishop',
     'Q': 'Queen',
-    'K': 'King',
-    'P': 'Pawn'
 }
 
 
@@ -74,78 +69,8 @@ class Piece(object):
         return map(board.alpha_notation, allowed_moves)
 
 
-class King(Piece):
-    shortname = 'k'
-
-    def moves_available(self, pos):
-        return super(King, self).moves_available(pos.upper(), True, True, 1)
-
-
 class Queen(Piece):
     shortname = 'q'
 
     def moves_available(self, pos):
         return super(Queen, self).moves_available(pos.upper(), True, True, 8)
-
-
-class Rook(Piece):
-    shortname = 'r'
-
-    def moves_available(self, pos):
-        return super(Rook, self).moves_available(pos.upper(), True, False, 8)
-
-
-class Bishop(Piece):
-    shortname = 'b'
-
-    def moves_available(self, pos):
-        return super(Bishop, self).moves_available(pos.upper(), False, True, 8)
-
-
-class Knight(Piece):
-    shortname = 'n'
-
-    def moves_available(self, pos):
-        board = self.board
-        allowed_moves = []
-        beginningpos = board.num_notation(pos.upper())
-        piece = board.get(pos.upper())
-        deltas = (
-        (-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
-        for x, y in deltas:
-            dest = beginningpos[0] + x, beginningpos[1] + y
-            if (board.alpha_notation(dest) not in board.occupied(piece.color)):
-                allowed_moves.append(dest)
-        allowed_moves = filter(board.is_on_board, allowed_moves)
-        return map(board.alpha_notation, allowed_moves)
-
-
-class Pawn(Piece):
-    shortname = 'p'
-
-    def moves_available(self, pos):
-        board = self.board
-        piece = self
-        if self.color == 'white':
-            startpos, direction, enemy = 1, 1, 'black'
-        else:
-            startpos, direction, enemy = 6, -1, 'white'
-        allowed_moves = []
-        # Moving
-        prohibited = board.occupied('white') + board.occupied('black')
-        beginningpos = board.num_notation(pos.upper())
-        forward = beginningpos[0] + direction, beginningpos[1]
-        if board.alpha_notation(forward) not in prohibited:
-            allowed_moves.append(forward)
-            if beginningpos[0] == startpos:
-                # If pawn is in starting position allow double moves
-                double_forward = (forward[0] + direction, forward[1])
-                if board.alpha_notation(double_forward) not in prohibited:
-                    allowed_moves.append(double_forward)
-        # Attacking
-        for a in range(-1, 2, 2):
-            attack = beginningpos[0] + direction, beginningpos[1] + a
-            if board.alpha_notation(attack) in board.occupied(enemy):
-                allowed_moves.append(attack)
-        allowed_moves = filter(board.is_on_board, allowed_moves)
-        return map(board.alpha_notation, allowed_moves)
