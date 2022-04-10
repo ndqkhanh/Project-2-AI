@@ -17,7 +17,7 @@ class Board(dict):
     y_axis = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
     x_axis = (1, 2, 3, 4, 5, 6, 7, 8)
     captured_pieces = {'white': [], 'black': []}
-    player_turn = None
+    player_turn = "black"
     halfmove_clock = 0
     fullmove_number = 1
     history = []
@@ -139,12 +139,7 @@ class Board(dict):
                 coord = self.alpha_notation((7 - x, y))
                 self[coord] = pieces.create_piece(letter)
                 self[coord].place(self)
-        if pat[1] == 'w':
-            self.player_turn = 'white'
-        else:
-            self.player_turn = 'black'
-        self.halfmove_clock = int(pat[2])
-        self.fullmove_number = int(pat[3])
+
 
 
 class ChessError(Exception): pass

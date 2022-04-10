@@ -157,5 +157,5 @@ def main(chessboard):
 
 
 if __name__ == "__main__":
-    game = chessboard.Board("4q/1q/3q/6q/2q/7q/5q/0q b 0 1")
+    game = chessboard.Board("4q/1q/3q/6q/2q/7q/5q/0q")
     main(game)
