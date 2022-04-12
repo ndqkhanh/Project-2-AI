@@ -58,7 +58,7 @@ for i in range(8):
             ti += 1
             tj -= 1
 
-resultList.append([randint(1,64)])
+resultList.append([randint(1,64)])#put one queen to a square
 
 print(*resultList, sep='\n')
 
