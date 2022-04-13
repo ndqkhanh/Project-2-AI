@@ -60,7 +60,8 @@ for i in range(8):
 
 resultList.append([randint(1,64)])#put one queen to a square
 
-print(*resultList, sep='\n')
+for clause in resultList:
+    print(*clause, sep ='^')
 
 s = Solver(bootstrap_with = resultList)
 print(s.solve())
