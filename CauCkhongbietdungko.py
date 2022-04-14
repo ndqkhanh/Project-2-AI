@@ -165,8 +165,8 @@ def createCNFSet(level = 2):
                     column_OrTrueCondition.append(i + j*8 + 1)
                 columnpicks.append(column_OrTrueCondition)
 
-            for item in rowAndcolumnConditions():
-                resultList.append(item)
+        for item in rowAndcolumnConditions():
+            resultList.append(item)
 
         # level == 1
         if level == 1:
@@ -214,7 +214,7 @@ def createCNFSet(level = 2):
     return resultList
 
 
-resultList = createCNFSet(level=1)
+resultList = createCNFSet(level=2)
 for clause in resultList:
     print(*clause, sep='v')
 solveCNFClauses(resultList)
