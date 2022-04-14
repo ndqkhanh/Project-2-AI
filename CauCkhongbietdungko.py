@@ -213,4 +213,8 @@ def createCNFSet(level = 2):
 
     return resultList
 
-solveCNFClauses(createCNFSet(level = 1))
+
+resultList = createCNFSet(level=1)
+for clause in resultList:
+    print(*clause, sep='v')
+solveCNFClauses(resultList)
