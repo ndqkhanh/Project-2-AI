@@ -155,7 +155,7 @@ class GUI:
 
         # print(resultQueenPos.toString())
 
-    def convertHorizontalListToVerticalList(self, list):
+    def convertVerticalListToHorizontalList(self, list):
         ls = [-1,-1,-1,-1,-1,-1,-1,-1]
         for index, value in enumerate(list):
             if value == -1:
@@ -169,7 +169,7 @@ class GUI:
         i = 0
         while len(frontier) > 0:
             curState = frontier.pop(0)#print state to GUI here
-            queensPos = self.convertHorizontalListToVerticalList(curState.queensPos)
+            queensPos = self.convertVerticalListToHorizontalList(curState.queensPos)
             set = ""
             l = 0
             for pos in queensPos:
