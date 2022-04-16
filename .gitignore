@@ -44,3 +44,4 @@ crashlytics-build.properties
 fabric.properties
 
 cnf.txt
+__pycache__
