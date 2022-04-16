@@ -7,7 +7,6 @@ import tkinter as tk
 from cnf import *
 from search import *
 from pysat.solvers import Solver
-
 class GUI:
     pieces = {}
     selected_piece = None
@@ -156,24 +155,35 @@ class GUI:
 
         # print(resultQueenPos.toString())
 
+    def convertHorizontalListToVerticalList(self, list):
+        ls = [-1,-1,-1,-1,-1,-1,-1,-1]
+        for index, value in enumerate(list):
+            if value == -1:
+                continue
+            ls[value] = index 
+        return ls
+
     def Astar(self, initState):
         expandedState = {}
         frontier = [initState]#priority queue
         i = 0
-        self.searchSBS.delete(0, "end")
         while len(frontier) > 0:
-            curState = frontier.pop(0) #print state to GUI here
+            curState = frontier.pop(0)#print state to GUI here
+            queensPos = self.convertHorizontalListToVerticalList(curState.queensPos)
             set = ""
             l = 0
-            for pos in curState.queensPos:
+            for pos in queensPos:
                 l+=1
                 if l > 1:
                     set += "/"
-                set += str(pos) + "q"
+                if pos == -1:
+                    set += "8"
+                else:
+                    set += str(pos) + "q"
 
             self.searchSBS.insert(i, set)
             i += 1
-          
+
             if curState.heuristic == 0:
                 return curState
 
@@ -185,10 +195,13 @@ class GUI:
 
                 for i in range(len(curState.queensPos)):#posistion each queen
 
-                    j = curState.queensPos[i]
+                    j = curState.queensPos[i]# so i,j is the position of the queen
 
-                    compress = numOfQueenEachRowColumnDiagonal
-                    decreaseFalseClause = (-(compress[0][j] - 1) if compress[0][j] > 1 else 1 ) - ( compress[2][i - j + 7] - 1) - ( compress[3][i + j] - 1 )
+                    compress = numOfQueenEachRowColumnDiagonal# decreasing size of the variable name
+                    if j != -1:
+                        decreaseFalseClause = (-(compress[0][j] - 1) if compress[0][j] > 1 else 1 ) - ( compress[2][i - j + 7] - 1) - ( compress[3][i + j] - 1 )
+                    else:
+                        decreaseFalseClause = -1# there is no queen in this column, so if we add 1 queen to this column, the clause "or true" in this column become true => the false clause decrease by 1
 
                     for newj in range(8):# expanding states
                         if j != newj:
@@ -197,7 +210,7 @@ class GUI:
                             newPos[i] = newj
                             
                             increaseFalseClause = (compress[0][newj] if compress[0][newj] > 0 else -1) + compress[2][i - newj + 7] + compress[3][i + newj]
-                            newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause
+                            newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause#read document to understand this
 
                             newState = State(newPos, accumulate = curState.accumulate + 1, heuristic = newHeurisistic)# generate new state
 
