@@ -33,7 +33,6 @@ def convertToState(queenPos):
     #pos[x] = y => there is 1 queen in column x row y and the tacit understanding logical variable x + y*8 + 1 is true
 
     del queenPos #release data
-
     return State(pos)
 
 def getNumOfQueenEachRowColumnDiagonal(s):
