@@ -31,7 +31,6 @@ def convertToState(queenPos):
         pos[i[0]] = i[1]
 
     del queenPos #release data
-
     return State(pos)
 
 def getNumOfQueenEachRowColumnDiagonal(s):
