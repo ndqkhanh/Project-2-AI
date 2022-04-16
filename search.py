@@ -26,9 +26,11 @@ def readInput():
     return list1
 
 def convertToState(queenPos):
-    pos = [0] * 8
+    pos = [-1] * 8
     for i in queenPos:
         pos[i[0]] = i[1]
+    #pos[x] = -1 => there is no queen in column x
+    #pos[x] = y => there is 1 queen in column x row y and the tacit understanding logical variable x + y*8 + 1 is true
 
     del queenPos #release data
     return State(pos)
@@ -40,11 +42,12 @@ def getNumOfQueenEachRowColumnDiagonal(s):
     antiDiagonal = [0] * 15
 
     for i in range(len(s.queensPos)):
-        j = s.queensPos[i]
-        column[i] += 1
-        row[j] += 1
-        mainDiagonal[i - j + 7] += 1
-        antiDiagonal[i + j] += 1
+        if s.queensPos[i] != -1:
+            j = s.queensPos[i]
+            column[i] += 1
+            row[j] += 1
+            mainDiagonal[i - j + 7] += 1
+            antiDiagonal[i + j] += 1
     result = []
     result.append(row)
     result.append(column)
@@ -67,6 +70,3 @@ def getFalseCNFClause(boardIn4):
 
 def heuristicPlusAccumulateState(s):
     return s.heuristic + s.accumulate
-
-
-
