@@ -13,18 +13,6 @@ class State:
     def __del__(self):
         pass
 
-def readInput():
-    filename = input()
-    if  exists(filename): 
-        fileHandle = open(filename, 'r')
-        fileHandle.readline() #read m
-        list1 = [[int(j) for j in i.split()] for i in fileHandle]
-        fileHandle.close()
-    else:
-        print("file does not exist")
-        exit()
-    return list1
-
 def convertToState(queenPos):
     pos = [-1] * 8
     for i in queenPos:
