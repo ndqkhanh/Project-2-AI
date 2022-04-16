@@ -1,6 +1,4 @@
 import random
-from pysat.solvers import Solver
-
 def rowAndcolumnConditions():
     #OrTrue condition Ex: a v b
     list = []
@@ -109,36 +107,9 @@ def restrictions_Of_pos(x, y):
         ydiag -= 1
         xdiag += 1
 
-
     return result
 
-# tmp = id_To_pos(17)
-# for i in restrictions_Of_pos(tmp[0], tmp[1]):
-#     print(i)
-
-# exit()
-def solveCNFClauses(resultList):
-    s = Solver(bootstrap_with = resultList)
-
-    isSatisfy = s.solve()
-    result = s.get_model()
-
-    if isSatisfy == True:
-        print("\nChessboard solution found:\n")
-        for i in range(8):
-            for j in range(8):
-                if result[i*8 + j] > 0:
-                    print("Q", end = " ")
-                else:
-                    print(".", end = " ")
-            print("")
-        print("\nResult:\n")
-        print(s.get_model())
-    else:
-        print("There are conflicts in the CNF clauses")
-
-
-def createCNFSet(level = 2):
+def createCNFSet(level = 1):
     isSatisfy = False
 
     while True:
@@ -214,8 +185,3 @@ def createCNFSet(level = 2):
 
     return resultList
 
-
-resultList = createCNFSet(level=1)
-for clause in resultList:
-    print(*clause, sep='v')
-solveCNFClauses(resultList)

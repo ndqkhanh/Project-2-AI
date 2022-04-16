@@ -4,7 +4,8 @@ from multiprocessing.sharedctypes import Value
 from turtle import textinput
 import chessboard
 import tkinter as tk
-import random
+from cnf import *
+from search import *
 from pysat.solvers import Solver
 
 class GUI:
@@ -20,6 +21,8 @@ class GUI:
     dim_square = 64
     filename_cnf = None 
     filename_cnf_output = None
+    filename_search = None
+    searchSBS = None
     currentLevel = 1
     def __init__(self, parent, chessboard):
         self.chessboard = chessboard
@@ -76,11 +79,139 @@ class GUI:
         input = tk.Entry(parent, textvariable=self.filename_cnf)
         input.place(x=canvas_width + 20, y=sectionY + 40)
        
-
         button = tk.Button(parent, text="Run", command=self.runSolveCNF)
         button.place(x=canvas_width + 20, y=sectionY + 70, width=195)
+
+
+        sectionY = 280
+        label = tk.Label(parent, text="SEARCH", fg='red')
+        label.place(x=canvas_width + 20, y=sectionY)
+
+        label = tk.Label(parent, text="File Input:")
+        label.place(x=canvas_width + 20, y=sectionY+ 20)
+        
+        self.filename_search = tk.StringVar(parent, value='input.txt')
+        input = tk.Entry(parent, textvariable=self.filename_search)
+        input.place(x=canvas_width + 20, y=sectionY + 40)
+
+        button = tk.Button(parent, text="Search", command=self.runSearch)
+        button.place(x=canvas_width + 20, y=sectionY + 70, width=195)
+
+        self.searchSBS = tk.Listbox(parent)
+        # levelCNFClause.select_set(0)
+        self.searchSBS.bind('<<ListboxSelect>>', self.drawTableFromData) #Select click
+        self.searchSBS.place(x=canvas_width + 20, y = sectionY + 110, height=110, width=195)
+
+        buttonPrev = tk.Button(parent, text="Prev", command=self.runPrevStep)
+        buttonPrev.place(x=canvas_width + 20, y=sectionY + 220, width=80)
+
+        buttonNext = tk.Button(parent, text="Next", command=self.runNextStep)
+        buttonNext.place(x=canvas_width + 135, y=sectionY + 220, width=80)
+
+
         self.draw_board()
         # self.canvas.bind("<Button-1>", self.square_clicked)
+
+    def drawTableFromData(self, event):
+        widget = event.widget
+        selection=widget.curselection()
+        set = widget.get(selection[0])
+        self.chessboard.show(set)
+        self.draw_board()
+        self.draw_pieces()
+
+    def runPrevStep(self, event):
+        selection = self.searchSBS.curselection()
+        
+        if selection:
+            set = self.searchSBS.get(selection[0] - 1)
+            self.chessboard.show(set)
+            self.searchSBS.delete(selection[0])
+            self.searchSBS.select_set(selection[0] - 1)
+            self.draw_board()
+            self.draw_pieces()
+    
+    def runNextStep(self):
+        selection = self.searchSBS.curselection()
+        if selection:
+            set = self.searchSBS.get(selection[0] + 1)
+            self.chessboard.show(set)
+            self.searchSBS.delete(selection[0])
+            self.searchSBS.select_set(selection[0] + 1)
+            self.draw_board()
+            self.draw_pieces()
+
+    def runSearch(self):
+        if  not(exists(self.filename_search.get())): 
+            self.info_label.config(text="   File does not exist  ", fg='red')
+            return
+        fileHandle = open(self.filename_search.get(), 'r')
+        fileHandle.readline() #read m
+        list1 = [[int(j) for j in i.split()] for i in fileHandle]
+        fileHandle.close()
+
+        queenPos = convertToState(list1)
+        self.Astar(queenPos)
+        del queenPos
+
+        # print(resultQueenPos.toString())
+
+    def Astar(self, initState):
+        expandedState = {}
+        frontier = [initState]#priority queue
+        i = 0
+        self.searchSBS.delete(0, "end")
+        while len(frontier) > 0:
+            curState = frontier.pop(0) #print state to GUI here
+            set = ""
+            l = 0
+            for pos in curState.queensPos:
+                l+=1
+                if l > 1:
+                    set += "/"
+                set += str(pos) + "q"
+
+            self.searchSBS.insert(i, set)
+            i += 1
+          
+            if curState.heuristic == 0:
+                return curState
+
+            if curState.mapDictionary not in expandedState.keys():
+                expandedState[curState.mapDictionary] = True
+
+                numOfQueenEachRowColumnDiagonal = getNumOfQueenEachRowColumnDiagonal(curState)
+                falseCNFClause =  getFalseCNFClause(numOfQueenEachRowColumnDiagonal)
+
+                for i in range(len(curState.queensPos)):#posistion each queen
+
+                    j = curState.queensPos[i]
+
+                    compress = numOfQueenEachRowColumnDiagonal
+                    decreaseFalseClause = (-(compress[0][j] - 1) if compress[0][j] > 1 else 1 ) - ( compress[2][i - j + 7] - 1) - ( compress[3][i + j] - 1 )
+
+                    for newj in range(8):# expanding states
+                        if j != newj:
+
+                            newPos = curState.queensPos.copy()
+                            newPos[i] = newj
+                            
+                            increaseFalseClause = (compress[0][newj] if compress[0][newj] > 0 else -1) + compress[2][i - newj + 7] + compress[3][i + newj]
+                            newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause
+
+                            newState = State(newPos, accumulate = curState.accumulate + 1, heuristic = newHeurisistic)# generate new state
+
+                            #print(falseCNFClause)
+                            #print(newState.toString())
+                            #print(newState.accumulate)
+                            #print(newState.heuristic)
+                            #print()
+                            if newState.mapDictionary not in expandedState.keys():#not in expanded list
+                                frontier.append(newState)
+                #sort to become priority queue
+                frontier.sort(key = heuristicPlusAccumulateState)
+
+        return initState
 
     def getLevelFromListBox(self, event):
         selection = event.widget.curselection()
@@ -205,214 +336,6 @@ def main(chessboard):
     gui.draw_board()
     gui.draw_pieces()
     root.mainloop()
-
-def rowAndcolumnConditions():
-    #OrTrue condition Ex: a v b
-    list = []
-    for i in range(8):#row and column
-        row_OrTrueCondition = []
-        column_OrTrueCondition = []
-
-        for j in range(8):
-            row_OrTrueCondition.append(i*8 + j + 1)
-            column_OrTrueCondition.append(i + j*8 + 1)
-        list.append(row_OrTrueCondition)
-        list.append(column_OrTrueCondition)
-    return list
-
-def pos_To_id(x, y):
-    return x * 8 + y + 1
-
-def id_To_pos(v):
-    clause = []
-    tmp = int((v - 1) / 8)
-    clause.append(tmp)
-    clause.append(v - 1 - tmp * 8)
-    return clause
-
-def restrictions_Of_pos(x, y):
-    result = []
-
-    currentV = pos_To_id(x, y)
-
-    # column+
-    xcol = x + 1
-    while xcol >= 0 and xcol < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(xcol, y))
-        result.append(clause)
-        xcol += 1
-    # column-
-    xcol = x - 1
-    while xcol >= 0 and xcol < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(xcol, y))
-        result.append(clause)
-        xcol -= 1
-
-
-    # row+
-    yrow = y + 1
-    while yrow >= 0 and yrow < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(x, yrow))
-        result.append(clause)
-        yrow += 1
-    # row-
-    yrow = y - 1
-    while yrow >= 0 and yrow < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(x, yrow))
-        result.append(clause)
-        yrow -= 1
-
-
-    # major diag+
-    xdiag = x + 1
-    ydiag = y + 1
-    while xdiag >= 0 and xdiag < 8 and ydiag >= 0 and ydiag < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(xdiag, ydiag))
-        result.append(clause)
-        ydiag += 1
-        xdiag += 1
-    # major diag-
-    xdiag = x - 1
-    ydiag = y - 1
-    while xdiag >= 0 and xdiag < 8 and ydiag >= 0 and ydiag < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(xdiag, ydiag))
-        result.append(clause)
-        ydiag -= 1
-        xdiag -= 1
-
-
-    # minor diag+
-    xdiag = x - 1
-    ydiag = y + 1
-    while xdiag >= 0 and xdiag < 8 and ydiag >= 0 and ydiag < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(xdiag, ydiag))
-        result.append(clause)
-        ydiag += 1
-        xdiag -= 1
-    # minor diag-
-    xdiag = x + 1
-    ydiag = y - 1
-    while xdiag >= 0 and xdiag < 8 and ydiag >= 0 and ydiag < 8:
-        clause=[]
-        clause.append(-currentV)
-        clause.append(-pos_To_id(xdiag, ydiag))
-        result.append(clause)
-        ydiag -= 1
-        xdiag += 1
-
-    return result
-
-
-def solveCNFClauses(resultList):
-    s = Solver(bootstrap_with = resultList)
-
-    isSatisfy = s.solve()
-    result = s.get_model()
-
-    if isSatisfy == True:
-        print("\nChessboard solution found:\n")
-        for i in range(8):
-            for j in range(8):
-                if result[i*8 + j] > 0:
-                    print("Q", end = " ")
-                else:
-                    print(".", end = " ")
-            print("")
-        print("\nResult:\n")
-        print(s.get_model())
-    else:
-        print("There are conflicts in the CNF clauses")
-
-
-def createCNFSet(level = 1):
-    isSatisfy = False
-
-    while True:
-        if isSatisfy == True:
-            break
-
-        # return result
-        resultList = []
-
-        #return postitions of queen place consecutively
-        Positions = []
-
-        # Board from 1 to 64 for level == 2
-        board = list(range(1, 65))
-
-        # count number of queens have been placed
-        count = 0
-
-        # set of 8 columns to pick for level 1
-        if level == 1:
-            columnpicks = []
-            for i in range(8):
-                column_OrTrueCondition = []
-                for j in range(8):
-                    column_OrTrueCondition.append(i + j*8 + 1)
-                columnpicks.append(column_OrTrueCondition)
-
-        for item in rowAndcolumnConditions():
-            resultList.append(item)
-
-        # level == 1
-        if level == 1:
-            for col in columnpicks:
-                if len(col) == 0: break
-                pos = random.choice(col)
-                col.remove(pos)
-
-                for i in restrictions_Of_pos(id_To_pos(pos)[0], id_To_pos(pos)[1]):
-                    resultList.append(i)
-
-                for i in columnpicks:
-                    for j in resultList:
-                        for t in j:
-                            if t < 0:
-                                if -t in i:
-                                    i.remove(-t)
-                Positions.append(pos)
-                count += 1
-        else: # level == 2
-            while count < 8:
-                if len(board) == 0: break
-                pos = random.choice(board)
-                board.remove(pos)
-
-                for i in restrictions_Of_pos(id_To_pos(pos)[0], id_To_pos(pos)[1]):
-                    resultList.append(i)
-
-                # for i in columnpicks:
-                for j in resultList:
-                    for t in j:
-                        if t < 0:
-                            if -t in board:
-                                board.remove(-t)
-                Positions.append(pos)
-                count += 1
-
-        # Make positions of queen placed to true
-        for i in Positions:
-            resultList.append([i])
-
-        # check if we successfully place 8 queens in board
-        if count >= 8: isSatisfy = True
-
-    return resultList
 
 
 if __name__ == "__main__":
