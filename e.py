@@ -26,9 +26,11 @@ def readInput():
     return list1
 
 def convertToState(queenPos):
-    pos = [0] * 8
+    pos = [-1] * 8
     for i in queenPos:
         pos[i[0]] = i[1]
+    #pos[x] = -1 => there is no queen in column x
+    #pos[x] = y => there is 1 queen in column x row y and the tacit understanding logical variable x + y*8 + 1 is true
 
     del queenPos #release data
 
@@ -41,11 +43,12 @@ def getNumOfQueenEachRowColumnDiagonal(s):
     antiDiagonal = [0] * 15
 
     for i in range(len(s.queensPos)):
-        j = s.queensPos[i]
-        column[i] += 1
-        row[j] += 1
-        mainDiagonal[i - j + 7] += 1
-        antiDiagonal[i + j] += 1
+        if s.queensPos[i] != -1:
+            j = s.queensPos[i]
+            column[i] += 1
+            row[j] += 1
+            mainDiagonal[i - j + 7] += 1
+            antiDiagonal[i + j] += 1
     result = []
     result.append(row)
     result.append(column)
@@ -87,10 +90,13 @@ def Astar(initState):
 
             for i in range(len(curState.queensPos)):#posistion each queen
 
-                j = curState.queensPos[i]
+                j = curState.queensPos[i]# so i,j is the position of the queen
 
-                compress = numOfQueenEachRowColumnDiagonal
-                decreaseFalseClause = (-(compress[0][j] - 1) if compress[0][j] > 1 else 1 ) - ( compress[2][i - j + 7] - 1) - ( compress[3][i + j] - 1 )
+                compress = numOfQueenEachRowColumnDiagonal# decreasing size of the variable name
+                if j != -1:
+                    decreaseFalseClause = (-(compress[0][j] - 1) if compress[0][j] > 1 else 1 ) - ( compress[2][i - j + 7] - 1) - ( compress[3][i + j] - 1 )
+                else:
+                    decreaseFalseClause = -1# there is no queen in this column, so if we add 1 queen to this column, the clause "or true" in this column become true => the false clause decrease by 1
 
                 for newj in range(8):# expanding states
                     if j != newj:
@@ -99,7 +105,7 @@ def Astar(initState):
                         newPos[i] = newj
                         
                         increaseFalseClause = (compress[0][newj] if compress[0][newj] > 0 else -1) + compress[2][i - newj + 7] + compress[3][i + newj]
-                        newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause
+                        newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause#read document to understand this
 
                         newState = State(newPos, accumulate = curState.accumulate + 1, heuristic = newHeurisistic)# generate new state
 
