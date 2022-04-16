@@ -166,9 +166,10 @@ class GUI:
     def Astar(self, initState):
         expandedState = {}
         frontier = [initState]#priority queue
-        i = 0
+        dem = 0
         while len(frontier) > 0:
             curState = frontier.pop(0)#print state to GUI here
+            # print("curState.queensPos", curState.queensPos)
             queensPos = self.convertVerticalListToHorizontalList(curState.queensPos)
             set = ""
             l = 0
@@ -180,9 +181,9 @@ class GUI:
                     set += "8"
                 else:
                     set += str(pos) + "q"
-
-            self.searchSBS.insert(i, set)
-            i += 1
+            dem += 1
+            self.searchSBS.insert(dem, set)
+            
 
             if curState.heuristic == 0:
                 return curState
