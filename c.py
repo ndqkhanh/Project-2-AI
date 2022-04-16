@@ -95,8 +95,8 @@ def solveCNFClauses(resultList):
 
 
 
-queenPositions = []
-resultList = createCNFSet(queenPositions, level=2)
+queenPositions = [[3,5]]
+resultList = createCNFSet(queenPositions, level=1)
 
 for clause in resultList:
     print(*clause, sep='v')
