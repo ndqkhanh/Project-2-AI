@@ -33,6 +33,7 @@ def convertToState(queenPos):
     #pos[x] = y => there is 1 queen in column x row y and the tacit understanding logical variable x + y*8 + 1 is true
 
     del queenPos #release data
+
     return State(pos)
 
 def getNumOfQueenEachRowColumnDiagonal(s):
@@ -76,6 +77,7 @@ def Astar(initState):
 
     expandedState = {}
     frontier = [initState]#priority queue
+    #countState = 0
     while len(frontier) > 0:
         curState = frontier.pop(0)#print state to GUI here
         if curState.heuristic == 0:
@@ -94,18 +96,23 @@ def Astar(initState):
                 compress = numOfQueenEachRowColumnDiagonal# decreasing size of the variable name
                 if j != -1:
                     decreaseFalseClause = (-(compress[0][j] - 1) if compress[0][j] > 1 else 1 ) - ( compress[2][i - j + 7] - 1) - ( compress[3][i + j] - 1 )
+                    #                                               ^                                   ^                                ^
+                    #   how many false clause decrease and increase in row when remove the queen?| and how many in main diagonal?|   and how many in anti diagonal?
                 else:
-                    decreaseFalseClause = -1# there is no queen in this column, so if we add 1 queen to this column, the clause "or true" in this column become true => the false clause decrease by 1
+                    decreaseFalseClause = 0# when there is no queen in column i => no false clause decrease or increase
 
                 for newj in range(8):# expanding states
                     if j != newj:
 
                         newPos = curState.queensPos.copy()
                         newPos[i] = newj
-                        
-                        increaseFalseClause = (compress[0][newj] if compress[0][newj] > 0 else -1) + compress[2][i - newj + 7] + compress[3][i + newj]
-                        newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause#read document to understand this
+                            
+                        increaseFalseClause = (compress[0][newj] if compress[0][newj] > 0 else -1) +compress[2][i - newj + 7] + compress[3][i + newj]
+                        #                                            ^                                      ^                           ^
+                        #   how many false clause decrease and increase in row when add the queen?| and how many in main diagonal?|   and how many in anti diagonal?
+                        increaseFalseClause += (-1 if compress[1][newj] == 0 else 0)#when column i has no queen, we add 1 queen so the number of false clause decrease because the clause "column has exactly 1 queen" is true
 
+                        newHeurisistic = falseCNFClause + decreaseFalseClause + increaseFalseClause#read document to understand more about this
                         newState = State(newPos, accumulate = curState.accumulate + 1, heuristic = newHeurisistic)# generate new state
 
                         #print(falseCNFClause)
