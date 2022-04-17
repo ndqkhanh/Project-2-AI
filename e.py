@@ -30,7 +30,7 @@ def convertToState(queenPos):
     for i in queenPos:
         pos[i[0]] = i[1]
     #pos[x] = -1 => there is no queen in column x
-    #pos[x] = y => there is 1 queen in column x row y and the tacit understanding logical variable x + y*8 + 1 is true
+    #pos[x] = y => there is 1 queen in column x row y and the tacit understanding logical variable x + y * 8 + 1 is true
 
     del queenPos #release data
 
@@ -72,6 +72,66 @@ def getFalseCNFClause(boardIn4):
 def heuristicPlusAccumulateState(s):
     return s.heuristic + s.accumulate
 
+def pos_To_id(col, row):
+    return row * 8 + col + 1
+def restrictions_Of_pos(col, row):
+    result = []
+
+    #row
+    for i in range(8):
+        if i != row:
+            clause = []
+            clause.append(-pos_To_id(col,row))
+            clause.append(-pos_To_id(col,i))
+            result.append(clause)
+    #column
+    for i in range(8):
+        if i != col:
+            clause = []
+            clause.append(-pos_To_id(col,row))
+            clause.append(-pos_To_id(i,row))
+            result.append(clause)
+
+    #main diagonal
+    x = col if col - row > 0 else 0
+    y = row if col - row < 0 else 0
+    while x < 8 and y < 8:
+        if x != col and y != row:
+            clause = []
+            clause.append(-pos_To_id(col,row))
+            clause.append(-pos_To_id(x,y))
+            result.append(clause)
+        x += 1
+        y += 1
+
+    #anti diagonal
+    y = row if row + col < 7 else 7
+    x = col if row + col > 7 else 0
+
+    while x < 8 and y >= 0:
+        if x != col and y != row:
+            clause = []
+            clause.append(-pos_To_id(col,row))
+            clause.append(-pos_To_id(x,y))
+            result.append(clause)
+        x += 1
+        y -= 1
+
+
+    return result
+def rowAndcolumnConditions():
+    #OrTrue condition Ex: a v b
+    list = []
+    for i in range(8):#row and column
+        row_OrTrueCondition = []
+        column_OrTrueCondition = []
+
+        for j in range(8):
+            row_OrTrueCondition.append(i*8 + j + 1)
+            column_OrTrueCondition.append(i + j*8 + 1)
+        list.append(row_OrTrueCondition)
+        list.append(column_OrTrueCondition)
+    return list
 
 def Astar(initState):
 
@@ -136,5 +196,15 @@ queenPos = convertToState(queenPos)
 
 resultQueenPos = Astar(queenPos)
 del queenPos
+
+''' in cnf ra file o day
+cnfSet = rowAndcolumnConditions()
+for i in resultQueenPos.queensPos:
+    #i: column index
+    #resultQueenPos.queensPos[i]: row index
+    cnfSet = cnfSet + restrictions_Of_pos(i,resultQueenPos.queensPos[i])
+    cnfSet.append([resultQueenPos.queensPos[i]*8 + i + 1])
+[print(*clause,sep='v') for clause in cnfSet]
+'''
 
 print(resultQueenPos.toString())
