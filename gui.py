@@ -249,6 +249,8 @@ class GUI:
 
         isSatisfy = s.solve()
         result = s.get_model()
+        print("\nResult\n")
+        print(result)
         if isSatisfy == True:
             set = ""
             for i in range(8):
