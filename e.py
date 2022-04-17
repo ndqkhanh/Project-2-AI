@@ -72,9 +72,9 @@ def getFalseCNFClause(boardIn4):
 def heuristicPlusAccumulateState(s):
     return s.heuristic + s.accumulate
 
-def pos_To_id(col, row):
+def pos_To_id(col, row):#ham nay khac voi ham cua cau c
     return row * 8 + col + 1
-def restrictions_Of_pos(col, row):
+def restrictions_Of_pos(col, row):#ham nay khac voi ham cua cau c
     result = []
 
     #row
