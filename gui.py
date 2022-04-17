@@ -119,26 +119,28 @@ class GUI:
         self.draw_board()
         self.draw_pieces()
 
-    def runPrevStep(self, event):
+    def runPrevStep(self):
         selection = self.searchSBS.curselection()
         
         if selection:
             set = self.searchSBS.get(selection[0] - 1)
-            self.chessboard.show(set)
-            self.searchSBS.delete(selection[0])
-            self.searchSBS.select_set(selection[0] - 1)
-            self.draw_board()
-            self.draw_pieces()
+            if set:
+                self.chessboard.show(set)
+                self.searchSBS.selection_clear(0, selection[0])
+                self.searchSBS.select_set(selection[0] - 1)
+                self.draw_board()
+                self.draw_pieces()
     
     def runNextStep(self):
         selection = self.searchSBS.curselection()
         if selection:
             set = self.searchSBS.get(selection[0] + 1)
-            self.chessboard.show(set)
-            self.searchSBS.delete(selection[0])
-            self.searchSBS.select_set(selection[0] + 1)
-            self.draw_board()
-            self.draw_pieces()
+            if set:
+                self.chessboard.show(set)
+                self.searchSBS.selection_clear(0, selection[0])
+                self.searchSBS.select_set(selection[0] + 1)
+                self.draw_board()
+                self.draw_pieces()
 
     def runSearch(self):
         if  not(exists(self.filename_search.get())): 
