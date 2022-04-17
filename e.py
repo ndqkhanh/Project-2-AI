@@ -12,6 +12,75 @@ class State:
 
     def __del__(self):
         pass
+    def pos_To_id(self,col, row):#ham nay khac voi ham cua cau c
+        return row * 8 + col + 1
+    def restrictions_Of_pos(self,col, row):#ham nay khac voi ham cua cau c
+        result = []
+
+        #row
+        for i in range(8):
+            if i != row:
+                clause = []
+                clause.append(-self.pos_To_id(col,row))
+                clause.append(-self.pos_To_id(col,i))
+                result.append(clause)
+        #column
+        for i in range(8):
+            if i != col:
+                clause = []
+                clause.append(-self.pos_To_id(col,row))
+                clause.append(-self.pos_To_id(i,row))
+                result.append(clause)
+
+        #main diagonal
+        x = col if col - row > 0 else 0
+        y = row if col - row < 0 else 0
+        while x < 8 and y < 8:
+            if x != col and y != row:
+                clause = []
+                clause.append(-self.pos_To_id(col,row))
+                clause.append(-self.pos_To_id(x,y))
+                result.append(clause)
+            x += 1
+            y += 1
+
+        #anti diagonal
+        y = row if row + col < 7 else 7
+        x = col if row + col > 7 else 0
+
+        while x < 8 and y >= 0:
+            if x != col and y != row:
+                clause = []
+                clause.append(-self.pos_To_id(col,row))
+                clause.append(-self.pos_To_id(x,y))
+                result.append(clause)
+            x += 1
+            y -= 1
+
+        return result
+    def rowAndcolumnConditions(self):#ham nay giong voi cua cau c
+        #OrTrue condition Ex: a v b
+        list = []
+        for i in range(8):#row and column
+            row_OrTrueCondition = []
+            column_OrTrueCondition = []
+
+            for j in range(8):
+                row_OrTrueCondition.append(i*8 + j + 1)
+                column_OrTrueCondition.append(i + j*8 + 1)
+            list.append(row_OrTrueCondition)
+            list.append(column_OrTrueCondition)
+        return list
+    def toCNF(self):
+        cnfSet = self.rowAndcolumnConditions()
+        for i in self.queensPos:
+            if self.queensPos[i] != -1:
+                #i: column index
+                #self.queensPos[i]: row index
+                cnfSet = cnfSet + self.restrictions_Of_pos(i,resultQueenPos.queensPos[i])
+                cnfSet.append([self.queensPos[i]*8 + i + 1])
+        return cnfSet
+
 
 def readInput():
     filename = input()
@@ -72,66 +141,6 @@ def getFalseCNFClause(boardIn4):
 def heuristicPlusAccumulateState(s):
     return s.heuristic + s.accumulate
 
-def pos_To_id(col, row):#ham nay khac voi ham cua cau c
-    return row * 8 + col + 1
-def restrictions_Of_pos(col, row):#ham nay khac voi ham cua cau c
-    result = []
-
-    #row
-    for i in range(8):
-        if i != row:
-            clause = []
-            clause.append(-pos_To_id(col,row))
-            clause.append(-pos_To_id(col,i))
-            result.append(clause)
-    #column
-    for i in range(8):
-        if i != col:
-            clause = []
-            clause.append(-pos_To_id(col,row))
-            clause.append(-pos_To_id(i,row))
-            result.append(clause)
-
-    #main diagonal
-    x = col if col - row > 0 else 0
-    y = row if col - row < 0 else 0
-    while x < 8 and y < 8:
-        if x != col and y != row:
-            clause = []
-            clause.append(-pos_To_id(col,row))
-            clause.append(-pos_To_id(x,y))
-            result.append(clause)
-        x += 1
-        y += 1
-
-    #anti diagonal
-    y = row if row + col < 7 else 7
-    x = col if row + col > 7 else 0
-
-    while x < 8 and y >= 0:
-        if x != col and y != row:
-            clause = []
-            clause.append(-pos_To_id(col,row))
-            clause.append(-pos_To_id(x,y))
-            result.append(clause)
-        x += 1
-        y -= 1
-
-
-    return result
-def rowAndcolumnConditions():#ham nay giong voi cua cau c
-    #OrTrue condition Ex: a v b
-    list = []
-    for i in range(8):#row and column
-        row_OrTrueCondition = []
-        column_OrTrueCondition = []
-
-        for j in range(8):
-            row_OrTrueCondition.append(i*8 + j + 1)
-            column_OrTrueCondition.append(i + j*8 + 1)
-        list.append(row_OrTrueCondition)
-        list.append(column_OrTrueCondition)
-    return list
 
 def Astar(initState):
 
@@ -197,14 +206,9 @@ queenPos = convertToState(queenPos)
 resultQueenPos = Astar(queenPos)
 del queenPos
 
-''' in cnf ra file o day
-cnfSet = rowAndcolumnConditions()
-for i in resultQueenPos.queensPos:
-    #i: column index
-    #resultQueenPos.queensPos[i]: row index
-    cnfSet = cnfSet + restrictions_Of_pos(i,resultQueenPos.queensPos[i])
-    cnfSet.append([resultQueenPos.queensPos[i]*8 + i + 1])
-[print(*clause,sep='v') for clause in cnfSet]
+
+''' ra cnfGoal.txt o day
+[print(*clause,sep='v') for clause in resultQueenPos.toCNF()]
 '''
 
 print(resultQueenPos.toString())
