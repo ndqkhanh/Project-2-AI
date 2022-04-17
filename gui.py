@@ -22,6 +22,8 @@ class GUI:
     filename_cnf_output = None
     filename_search = None
     searchSBS = None
+    filename_search_cnf = None
+    resultQueenPos = None
     currentLevel = 1
     def __init__(self, parent, chessboard):
         self.chessboard = chessboard
@@ -99,17 +101,30 @@ class GUI:
         self.searchSBS = tk.Listbox(parent)
         # levelCNFClause.select_set(0)
         self.searchSBS.bind('<<ListboxSelect>>', self.drawTableFromData) #Select click
-        self.searchSBS.place(x=canvas_width + 20, y = sectionY + 110, height=110, width=195)
+        self.searchSBS.place(x=canvas_width + 20, y = sectionY + 110, height=90, width=195)
 
         buttonPrev = tk.Button(parent, text="Prev", command=self.runPrevStep)
-        buttonPrev.place(x=canvas_width + 20, y=sectionY + 220, width=80)
+        buttonPrev.place(x=canvas_width + 20, y=sectionY + 200, width=80)
 
         buttonNext = tk.Button(parent, text="Next", command=self.runNextStep)
-        buttonNext.place(x=canvas_width + 135, y=sectionY + 220, width=80)
+        buttonNext.place(x=canvas_width + 135, y=sectionY + 200, width=80)
 
+        self.filename_search_cnf = tk.StringVar(parent, value='output.txt')
+        input = tk.Entry(parent, textvariable=self.filename_search_cnf)
+        input.place(x=canvas_width + 20, y=sectionY + 235)
+
+        buttonGenerate = tk.Button(parent, text="Generate CNF From Search", command=self.generateCNFFromSearch)
+        buttonGenerate.place(x=canvas_width + 20, y=sectionY + 260, width=195)
 
         self.draw_board()
         # self.canvas.bind("<Button-1>", self.square_clicked)
+
+    def generateCNFFromSearch(self):
+        if self.resultQueenPos:
+            file = open(self.filename_search_cnf.get(), 'w')
+            [print(*clause,sep='v',file=file) for clause in self.resultQueenPos.toCNF()]
+            file.close()
+            self.info_label.config(text="   Generate CNF Clauses from 'Search' successfully.  ", fg='red')
 
     def drawTableFromData(self, event):
         widget = event.widget
@@ -152,10 +167,8 @@ class GUI:
         fileHandle.close()
 
         queenPos = convertToState(list1)
-        self.Astar(queenPos)
+        self.resultQueenPos = self.Astar(queenPos)
         del queenPos
-
-        # print(resultQueenPos.toString())
 
     def convertVerticalListToHorizontalList(self, list):
         ls = [-1,-1,-1,-1,-1,-1,-1,-1]
@@ -172,7 +185,7 @@ class GUI:
         dem = 0
         #countState = 0
         while len(frontier) > 0:
-            curState = frontier.pop(0)#print state to GUI here
+            curState = frontier.pop(0) #print state to GUI here
 
             # print("curState.queensPos", curState.queensPos)
             queensPos = self.convertVerticalListToHorizontalList(curState.queensPos)
