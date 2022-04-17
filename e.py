@@ -119,7 +119,7 @@ def restrictions_Of_pos(col, row):#ham nay khac voi ham cua cau c
 
 
     return result
-def rowAndcolumnConditions():
+def rowAndcolumnConditions():#ham nay giong voi cua cau c
     #OrTrue condition Ex: a v b
     list = []
     for i in range(8):#row and column
