@@ -33,8 +33,8 @@ class State:
                 result.append(clause)
 
         #main diagonal
-        x = col if col - row > 0 else 0
-        y = row if col - row < 0 else 0
+        x = col - row if col - row > 0 else 0
+        y = row - col if col - row < 0 else 0
         while x < 8 and y < 8:
             if x != col and y != row:
                 clause = []
@@ -45,8 +45,8 @@ class State:
             y += 1
 
         #anti diagonal
-        y = row if row + col < 7 else 7
-        x = col if row + col > 7 else 0
+        y = row + col if row + col < 7 else 7
+        x = col + col - 7 if row + col > 7 else 0
 
         while x < 8 and y >= 0:
             if x != col and y != row:
