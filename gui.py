@@ -187,25 +187,38 @@ class GUI:
         while len(frontier) > 0:
             curState = frontier.pop(0) #print state to GUI here
 
-            # print("curState.queensPos", curState.queensPos)
-            queensPos = self.convertVerticalListToHorizontalList(curState.queensPos)
-            set = ""
-            l = 0
-            for pos in queensPos:
-                l+=1
-                if l > 1:
-                    set += "/"
-                if pos == -1:
-                    set += "8"
-                else:
-                    set += str(pos) + "q"
-            dem += 1
-            self.searchSBS.insert(dem, set)
-
             if curState.heuristic == 0:
+                # print("curState.queensPos", curState.queensPos)
+                queensPos = self.convertVerticalListToHorizontalList(curState.queensPos)
+                set = ""
+                l = 0
+                for pos in queensPos:
+                    l+=1
+                    if l > 1:
+                        set += "/"
+                    if pos == -1:
+                        set += "8"
+                    else:
+                        set += str(pos) + "q"
+                dem += 1
+                self.searchSBS.insert(dem, set)
                 return curState
 
             if curState.mapDictionary not in expandedState.keys():
+                # print("curState.queensPos", curState.queensPos)
+                queensPos = self.convertVerticalListToHorizontalList(curState.queensPos)
+                set = ""
+                l = 0
+                for pos in queensPos:
+                    l+=1
+                    if l > 1:
+                        set += "/"
+                    if pos == -1:
+                        set += "8"
+                    else:
+                        set += str(pos) + "q"
+                dem += 1
+                self.searchSBS.insert(dem, set)
                 expandedState[curState.mapDictionary] = True
 
                 numOfQueenEachRowColumnDiagonal = getNumOfQueenEachRowColumnDiagonal(curState)
